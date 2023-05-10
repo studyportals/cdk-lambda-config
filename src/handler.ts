@@ -14,7 +14,7 @@ import { PromiseResult } from "aws-sdk/lib/request"
 type Config = Record<string, any>
 
 const RETRY_INTERVAL_MS = 15000
-const RETRY_ATTEMPTS = 4
+const RETRY_ATTEMPTS = 6
 
 export const handler: OnEventHandler = async (event) => {
   switch (event.RequestType) {

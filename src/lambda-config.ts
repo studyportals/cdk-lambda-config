@@ -114,7 +114,7 @@ class LambdaConfigProvider extends Construct {
         code: lambda.Code.fromAsset(path.join(__dirname, "../dist/handler")),
         handler: "index.handler",
         runtime: lambda.Runtime.NODEJS_16_X,
-        timeout: Duration.seconds(90),
+        timeout: Duration.seconds(120),
         initialPolicy: statements,
       }),
     })
