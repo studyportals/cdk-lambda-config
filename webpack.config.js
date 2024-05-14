@@ -18,8 +18,7 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: [/node_modules/],
-        include: [/src/, /node_modules\/aws-cdk-lib/],
+        exclude: [/node_modules/]
       },
     ],
   },
