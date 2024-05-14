@@ -56,7 +56,3 @@ export const releaseLock = async (
     throw err
   }
 }
-
-interface AWSError extends Error {
-  code: string
-}
