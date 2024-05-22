@@ -18,11 +18,11 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: /node_modules/,
+        exclude: [/node_modules/]
       },
     ],
   },
-  externals: [/^aws-sdk/, "original-fs"],
+  externals: [/^@aws-sdk/, "original-fs"],
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",

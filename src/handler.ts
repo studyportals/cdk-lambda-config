@@ -1,14 +1,19 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../node_modules/aws-cdk-lib/custom-resources/lib/provider-framework/types.d.ts" />
+
 // Cheating a bit as it seems the type is not available in the export.
 // TODO: Duplicate the relevant type parts?
 import Zip from "adm-zip"
-import type { OnEventHandler } from "aws-cdk-lib/custom-resources/lib/provider-framework/types"
-import Lambda, { GetFunctionResponse } from "aws-sdk/clients/lambda"
+import {
+  LambdaClient,
+  GetFunctionCommand,
+  UpdateFunctionCodeCommand,
+  GetFunctionCommandOutput,
+} from "@aws-sdk/client-lambda"
 import axios from "axios"
 import { mkdtempSync, writeFileSync } from "fs"
 import { resolve } from "path"
 import { acquireLock, releaseLock } from "./locks"
-import { AWSError } from "aws-sdk/lib/error"
-import { PromiseResult } from "aws-sdk/lib/request"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Config = Record<string, any>
@@ -16,7 +21,9 @@ type Config = Record<string, any>
 const RETRY_INTERVAL_MS = 15000
 const RETRY_ATTEMPTS = 6
 
-export const handler: OnEventHandler = async (event) => {
+export const handler: AWSCDKAsyncCustomResource.OnEventHandler = async (
+  event: AWSCDKAsyncCustomResource.OnEventRequest,
+) => {
   switch (event.RequestType) {
     case "Delete":
       // Nothing to do on delete.
@@ -33,7 +40,7 @@ export const handler: OnEventHandler = async (event) => {
       const lockTableName = getTableNameFromArn(config["locksTable"] as string)
       const functionArn = withoutVersion(functionArnFull)
 
-      const lambda = new Lambda({
+      const lambda = new LambdaClient({
         region: getFunctionRegion(functionArn),
       })
 
@@ -47,7 +54,7 @@ const getTableNameFromArn = (arn: string): string | undefined => {
 }
 
 const createOrUpdateFunction = async (
-  lambda: Lambda,
+  lambda: LambdaClient,
   functionSimpleArn: string,
   config: Config,
   lockTableName?: string,
@@ -86,13 +93,14 @@ const createOrUpdateFunction = async (
       responseType: "arraybuffer",
     })
 
-    const { CodeSha256, Version, FunctionArn } = await lambda
-      .updateFunctionCode({
+    const { CodeSha256, Version, FunctionArn } = await lambda.send(
+      new UpdateFunctionCodeCommand({
         FunctionName: functionSimpleArn,
         ZipFile: addConfigToZip(data, config),
         Publish: true,
-      })
-      .promise()
+      }),
+    )
+
     if (FunctionArn) {
       await waitAndGetFunction(FunctionArn) // Wait for the new function version to be ready
     }
@@ -135,16 +143,16 @@ function withoutVersion(arn: string): string {
 async function waitAndGetFunction(
   functionArn: string,
   timeoutMs = 30000,
-): Promise<PromiseResult<GetFunctionResponse, AWSError>> {
-  const lambda = new Lambda({ region: getFunctionRegion(functionArn) })
+): Promise<GetFunctionCommandOutput> {
+  const lambda = new LambdaClient({ region: getFunctionRegion(functionArn) })
 
   const startTime = Date.now()
   let timeout = false
 
   while (!timeout) {
-    const response = await lambda
-      .getFunction({ FunctionName: functionArn })
-      .promise()
+    const response = await lambda.send(
+      new GetFunctionCommand({ FunctionName: functionArn }),
+    )
     console.log(JSON.stringify(response, null, 2))
 
     if (
