@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`LambdaConfig 1`] = `
 {
@@ -16,7 +16,7 @@ exports[`LambdaConfig 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "nodejs16.x",
+        "Runtime": "nodejs24.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -96,13 +96,17 @@ exports[`LambdaConfig 1`] = `
           },
         },
         "Handler": "framework.onEvent",
+        "LoggingConfig": {
+          "ApplicationLogLevel": "FATAL",
+          "LogFormat": "JSON",
+        },
         "Role": {
           "Fn::GetAtt": [
             "henristlambdaconfigproviderProviderframeworkonEventServiceRole9AA104AD",
             "Arn",
           ],
         },
-        "Runtime": "nodejs14.x",
+        "Runtime": "nodejs22.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -168,6 +172,16 @@ exports[`LambdaConfig 1`] = `
                 },
               ],
             },
+            {
+              "Action": "lambda:GetFunction",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "henristlambdaconfigproviderUpdateCodeFnBF8DF66B",
+                  "Arn",
+                ],
+              },
+            },
           ],
           "Version": "2012-10-17",
         },
@@ -194,8 +208,8 @@ exports[`LambdaConfig 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "nodejs16.x",
-        "Timeout": 10,
+        "Runtime": "nodejs24.x",
+        "Timeout": 120,
       },
       "Type": "AWS::Lambda::Function",
     },

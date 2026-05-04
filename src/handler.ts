@@ -18,12 +18,21 @@ import { acquireLock, releaseLock } from "./locks"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Config = Record<string, any>
 
+type OnEventRequestWithProperties = AWSCDKAsyncCustomResource.OnEventRequest & {
+  ResourceProperties: {
+    FunctionArn: string
+    Config: Config
+  }
+}
+
 const RETRY_INTERVAL_MS = 15000
 const RETRY_ATTEMPTS = 6
 
 export const handler: AWSCDKAsyncCustomResource.OnEventHandler = async (
   event: AWSCDKAsyncCustomResource.OnEventRequest,
 ) => {
+  const request = event as OnEventRequestWithProperties
+
   switch (event.RequestType) {
     case "Delete":
       // Nothing to do on delete.
@@ -35,8 +44,8 @@ export const handler: AWSCDKAsyncCustomResource.OnEventHandler = async (
     case "Update":
       console.log(JSON.stringify(event))
 
-      const functionArnFull = event.ResourceProperties.FunctionArn as string
-      const config = event.ResourceProperties.Config as Config
+      const functionArnFull = request.ResourceProperties.FunctionArn
+      const config = request.ResourceProperties.Config
       const lockTableName = getTableNameFromArn(config["locksTable"] as string)
       const functionArn = withoutVersion(functionArnFull)
 
