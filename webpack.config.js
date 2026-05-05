@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require("path")
 
 module.exports = {
@@ -18,7 +17,7 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: [/node_modules/]
+        exclude: [/node_modules/],
       },
     ],
   },
